@@ -24,11 +24,11 @@ fn main() {
         }
         "--help" | "-h" | "--?" => {
             println!("KevinZonda.Utility.Rust.Replacer");
-            println!("  --help Get Help");
+            println!("  --help | -h | --?");
             println!("    Get Help");
-            println!("  --stdin/--pipeline/-p <from> <to>");
+            println!("  --stdin | --pipeline | -p <from> <to>");
             println!("    Replace with pipeline");
-            println!("  --string/-s <from> <to>");
+            println!("  --string | -s <text> <from> <to>");
             println!("    Replace with string");
             exit(true);
         }
