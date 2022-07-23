@@ -1,80 +1,81 @@
-use std::io::{Read, stdin};
-use std::{env, process};
+use std::{
+    env::args,
+    fmt::Display,
+    io::{stdin, Read},
+    process::exit,
+};
+
+#[derive(Debug)]
+enum Error {
+    UnknownArgument(String),
+    WrongArgumentNumber { expect: usize, got: usize },
+    IO(std::io::Error),
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Self::IO(e)
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::UnknownArgument(arg) => write!(f, "unknown argument: {arg}"),
+            Error::WrongArgumentNumber { expect, got } => {
+                write!(f, "argument expect: {expect}, got: {got}")
+            }
+            Error::IO(e) => write!(f, "io error: {e}"),
+        }
+    }
+}
 
 fn main() {
-    let args = get_args();
-    let arg1 = if args.len() == 0 { "--help" } else {
-        args[0].as_str()
-    };
-    let mut str = "".to_string();
-    let mut pre_str = "";
-    let mut after_str = "";
-    match arg1 {
+    if let Err(e) = run() {
+        eprintln!("error: {e}");
+        exit(1);
+    }
+}
+
+fn run() -> Result<(), Error> {
+    let mut args = args().skip(1);
+    let arg1 = args.next().unwrap_or_else(|| String::from("--help"));
+    let args: Vec<String> = args.collect();
+    let pipe_input: String;
+    let (str, from, to) = match arg1.as_str() {
         "--stdin" | "--pipeline" | "-p" => {
-            ensure_eq(args.len() - 1, 2);
-            str = read_from_pipe();
-            pre_str = &*args[1];
-            after_str = &*args[2];
+            ensure_argc(&args, 2)?;
+            pipe_input = read_from_pipe()?;
+            (&pipe_input, &args[0], &args[1])
         }
         "--string" | "-s" => {
-            ensure_eq(args.len() - 1, 3);
-            str = args[1].to_string();
-            pre_str = &*args[2];
-            after_str = &*args[3];
+            ensure_argc(&args, 3)?;
+            (&args[0], &args[1], &args[2])
         }
-        "--help" | "-h" | "--?" => {
-            println!("KevinZonda.Utility.Rust.Replacer");
-            println!("  --help | -h | --?");
-            println!("    Get Help");
-            println!("  --stdin | --pipeline | -p <from> <to>");
-            println!("    Replace with pipeline");
-            println!("  --string | -s <text> <from> <to>");
-            println!("    Replace with string");
-            exit(true);
+        "--help" | "-h" | "-?" => {
+            let help_info = include_str!("./help_info.txt");
+            println!("{help_info}");
+            return Ok(());
         }
-        _ => {
-            panic("error: non-recognisable argument ".to_string() + arg1);
-        }
+        _ => return Err(Error::UnknownArgument(arg1)),
     };
-    str = str.replace(pre_str, after_str);
-    print!("{}", str)
-    // match io::stdout().write_all(str.as_ref()) {
-    //     Ok(_) => {}
-    //     Err(err) => {
-    //         panic(format!("error: {}", err));
-    //     }
-    // }
+    print!("{}", str.replace(from, to));
+    Ok(())
 }
 
-fn ensure_eq(arg_len: usize, len: usize) {
-    if arg_len != len {
-        panic(format!("error: argument required: {}, got {}", len, arg_len))
+fn read_from_pipe() -> Result<String, Error> {
+    let mut buf = String::new();
+    stdin().read_to_string(&mut buf)?;
+    Ok(buf)
+}
+
+fn ensure_argc(args: &[String], len: usize) -> Result<(), Error> {
+    if args.len() != len {
+        Err(Error::WrongArgumentNumber {
+            expect: len,
+            got: args.len(),
+        })
+    } else {
+        Ok(())
     }
-}
-
-
-fn read_from_pipe() -> String {
-    let mut result = String::new();
-    match stdin().read_to_string(&mut result) {
-        Ok(_) => {}
-        Err(error) => {
-            panic("error: ".to_string() + error.to_string().as_str());
-        }
-    }
-    result
-}
-
-fn exit(is_normal_exit: bool) {
-    process::exit(if is_normal_exit { 0 } else { 1 });
-}
-
-fn panic(msg: String) {
-    eprintln!("{}", msg);
-    exit(false)
-}
-
-fn get_args() -> Vec<String> {
-    let mut args: Vec<String> = env::args().collect();
-    args.remove(0);
-    args
 }
