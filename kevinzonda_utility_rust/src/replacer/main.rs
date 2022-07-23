@@ -54,7 +54,7 @@ fn run() -> Result<(), Error> {
         }
         "--help" | "-h" | "-?" => {
             let help_info = include_str!("./help_info.txt");
-            println!("{help_info}");
+            eprintln!("{help_info}");
             return Ok(());
         }
         _ => return Err(Error::UnknownArgument(arg1)),
