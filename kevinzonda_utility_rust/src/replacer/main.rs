@@ -1,5 +1,5 @@
-use std::io::{Read, stdin, Write};
-use std::{env, io, process};
+use std::io::{Read, stdin};
+use std::{env, process};
 
 fn main() {
     let args = get_args();
@@ -37,12 +37,13 @@ fn main() {
         }
     };
     str = str.replace(pre_str, after_str);
-    match io::stdout().write_all(str.as_ref()) {
-        Ok(_) => {}
-        Err(err) => {
-            panic(format!("error: {}", err));
-        }
-    }
+    print!("{}", str)
+    // match io::stdout().write_all(str.as_ref()) {
+    //     Ok(_) => {}
+    //     Err(err) => {
+    //         panic(format!("error: {}", err));
+    //     }
+    // }
 }
 
 fn ensure_eq(arg_len: usize, len: usize) {
