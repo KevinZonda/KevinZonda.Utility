@@ -5,3 +5,5 @@ KevinZonda.Utility.Rust.Replacer
     Replace with pipeline
   --string | -s <text> <from> <to> | <text> <from> <to>
     Replace with string
+  --file | -f <from path> <from> <to> <to path>
+    Replace in file
