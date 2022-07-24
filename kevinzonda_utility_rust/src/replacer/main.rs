@@ -57,7 +57,16 @@ fn run() -> Result<(), Error> {
             eprintln!("{help_info}");
             return Ok(());
         }
-        _ => return Err(Error::UnknownArgument(arg1)),
+        _ => {
+            match args.len() {
+                1 => {
+                    pipe_input = read_from_pipe()?;
+                    (&pipe_input, &arg1, &args[0])
+                },
+                2 => (&arg1, &args[0], &args[1]),
+                _ => return Err(Error::UnknownArgument(arg1))
+            }
+        }
     };
     print!("{}", str.replace(from, to));
     Ok(())

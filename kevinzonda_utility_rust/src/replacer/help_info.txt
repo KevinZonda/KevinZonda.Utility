@@ -1,7 +1,7 @@
 KevinZonda.Utility.Rust.Replacer
   --help | -h | -?
     Get Help
-  --stdin | --pipeline | -p <from> <to>
+  --stdin | --pipeline | -p <from> <to> | <from> <to>
     Replace with pipeline
-  --string | -s <text> <from> <to>
+  --string | -s <text> <from> <to> | <text> <from> <to>
     Replace with string
